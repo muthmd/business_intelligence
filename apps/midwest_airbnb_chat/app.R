@@ -1,0 +1,36 @@
+# Midwest Airbnb Chat: ask questions about Airbnb listings, get SQL, a table, or a chart back
+library(shiny)
+library(bslib)
+library(querychat)
+
+con = DBI::dbConnect(RSQLite::SQLite(), "data/midwest_airbnb.db")
+
+client = ellmer::chat_openai(
+  model  = "gpt-5.6-luna",
+  params = ellmer::params(reasoning_effort = "none")
+)
+
+qc = querychat::querychat(
+  con, "listings",
+  client             = client,
+  tools              = c("filter", "query", "visualize"),  # visualize: charts in the chat (needs ggsql)
+  greeting           = "Ask me about 14,887 Airbnb listings in Chicago, Columbus, and the Twin Cities.",
+  data_description   = "data/data_desc.md",
+  extra_instructions = "data/extra_instructions.md"
+)
+
+ui = page_sidebar(
+  title   = "Midwest Airbnb Chat",
+  theme   = bs_theme(bootswatch = "minty",
+                     base_font = font_google("Nunito Sans")),
+  sidebar = qc$sidebar(width = 350),
+  card(card_header(textOutput("title")),
+       DT::DTOutput("table")),
+  accordion(open = "SQL",
+            accordion_panel("SQL", verbatimTextOutput("sql")),
+            accordion_panel("About",
+                            p("Listings come from Inside Airbnb: Chicago (snapshot 2026-07-20), Columbus (2026-07-23), and the Twin Cities (2026-07-21)."),
+                            p("Built by Miles Muth for ISA 401 at Miami University.")))
+)
+
+server = function(input, output, session) {
