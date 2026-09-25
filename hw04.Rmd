@@ -1,0 +1,56 @@
+---
+title: "hw04"
+output: html_document
+date: "2026-09-14"
+---
+
+```{r}
+install.packages("RSQLite")
+```
+
+```{r}
+getwd()
+```
+
+
+```{r}
+con = DBI::dbConnect(RSQLite::SQLite(), "midwest_airbnb.db")
+listings = DBI::dbReadTable(con, "listings")
+
+#How many listings
+nrow(listings)
+```
+
+# How many of the listings are in Columbus?
+```{r}
+sum(listings$city == "Columbus")
+```
+
+
+# Most Expensive Listing 
+
+```{r}
+listings[listings$city == "Chicago", ][which.max(listings[listings$city == "Chicago", ]$price), "name"]
+```
+
+
+# how many distinct values does the neighbourhood column have
+
+```{r}
+length(unique(listings$neighbourhood[listings$city == "Chicago"]))
+```
+
+
+# how many listings are run by a superhost?
+
+```{r}
+sum(listings$host_is_superhost == "t", na.rm = TRUE)
+```
+
+
+# How many listings cost more than $1K per night?
+
+```{r}
+sum(listings$price > 1000)
+```
+
