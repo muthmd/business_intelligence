@@ -33,4 +33,12 @@ ui = page_sidebar(
                             p("Built by Miles Muth for ISA 401 at Miami University.")))
 )
 
-server = function(input, output, session) {
+server = function(input, output, session) {  vals = qc$server()
+output$title = renderText(vals$title() %||% "All listings")
+output$table = DT::renderDT(vals$df(),
+                            options = list(pageLength = 10))
+output$sql   = renderText(vals$sql() %||%
+                            "SELECT * FROM listings")
+}
+
+shinyApp(ui, server)
